@@ -32,6 +32,19 @@ bool CaughtZeroOrManySymbols(char searchedChar, int& currentIndexInText, string 
 	return true;
 }
 
+// seeks out as many symbols as possible that are the same as the symbol before the '+' operator
+// sets the index to the last found match +1 and returns if there is at least one symbol equal to the one before '+'
+bool CaughtOneOrManySymbols(char searchedChar, int& currentIndexInText, string text) {
+	bool atLeastOne = false;
+	while (text[currentIndexInText] == searchedChar && currentIndexInText >= 0)
+	{
+		atLeastOne = true;
+		currentIndexInText--;
+	}
+	currentIndexInText++;
+	return atLeastOne;
+}
+
 // checking if a given regex command is valid based on the given criteria
 bool IsRegexValid(string regex) {
 	//keeping the count of the special symbols in order not to exceed the limit
@@ -96,6 +109,14 @@ bool IsRegexExpressionContainedInString(string regex, string text)
 		if (regex[IndexOfRegexExpression] == '*') {
 			if (CaughtZeroOrManySymbols(regex[IndexOfRegexExpression - 1], i, text)) {
 				IndexOfRegexExpression-=2;
+			}
+			else {
+				IndexOfRegexExpression = regex.size() - 1;
+			}
+		}
+		else if (regex[IndexOfRegexExpression] == '+') {
+			if (CaughtOneOrManySymbols(regex[IndexOfRegexExpression - 1], i, text)) {
+				IndexOfRegexExpression -= 2;
 			}
 			else {
 				IndexOfRegexExpression = regex.size() - 1;
