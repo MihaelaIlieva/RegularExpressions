@@ -74,8 +74,32 @@ bool IsRegexValid(string regex) {
 	}
 	else {
 		return true;
-	}
+	}	
 }
+
+// if the regex is only of ordinary symbols, we check if it is contained in the text from the file
+bool IsRegexExpressionContainedInString(string regexp, string s)
+{
+	int IndexOfRegexExpression = regexp.size() - 1;
+	for (int i = s.size() - 1; i >= 0; i--) {
+		//cout << s[i];
+		//If it is just a normal symbol
+			//we try to match it with the string symbol
+		if (s[i] == regexp[IndexOfRegexExpression]) {
+			// on success we move on to the next symbol for matching
+			IndexOfRegexExpression--;
+		}
+		else {
+			//on fail we reset try again to match the last symbol of the expression 
+			IndexOfRegexExpression = regexp.size() - 1;
+		}
+		if (IndexOfRegexExpression < 0) {
+			return true;
+		}
+	}
+	return false;
+}
+
 int main() {
 
    // inserting the command for the file	
