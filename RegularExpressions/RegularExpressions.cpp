@@ -32,7 +32,7 @@ bool CaughtZeroOrManySymbols(char searchedChar, int& currentIndexInText, string 
 	return true;
 }
 
-// seeks out as many symbols as possible that are the same as the symbol before the '+' operator
+// seeks out as many symbols as possible (at least one) that are the same as the symbol before the '+' operator
 // sets the index to the last found match +1 and returns if there is at least one symbol equal to the one before '+'
 bool CaughtOneOrManySymbols(char searchedChar, int& currentIndexInText, string text) {
 	bool atLeastOne = false;
@@ -43,6 +43,16 @@ bool CaughtOneOrManySymbols(char searchedChar, int& currentIndexInText, string t
 	}
 	currentIndexInText++;
 	return atLeastOne;
+}
+
+// seeks out if there are zero or one symbols that are the same as the symbol before the '?' operator
+// sets the index to the last found match +1 and returns if there are zero or one symbols equal to the one before '?'
+bool CaughtZeroOrOneSymbols(char searchedChar, int& currentIndexInText, string text) {
+	if (text[currentIndexInText] == searchedChar && currentIndexInText >= 0) {
+		currentIndexInText--;
+	}
+	currentIndexInText++;
+	return true;
 }
 
 // checking if a given regex command is valid based on the given criteria
@@ -122,6 +132,14 @@ bool IsRegexExpressionContainedInString(string regex, string text)
 				IndexOfRegexExpression = regex.size() - 1;
 			}
 		}
+		else if (regex[IndexOfRegexExpression] == '?') {
+			if (CaughtZeroOrOneSymbols(regex[IndexOfRegexExpression - 1], i, text)) {
+				IndexOfRegexExpression -= 2;
+			}
+			else {
+				IndexOfRegexExpression = regex.size() - 1;
+			}
+		}
 		else {
 			//cout << s[i];
 		//If it is just a normal symbol
@@ -186,7 +204,7 @@ int main() {
 
 	myFile.close();
 
-	//cout << IsRegexExpressionContainedInString(regexCommand, textFromFile);
+	cout << IsRegexExpressionContainedInString(regexCommand, textFromFile);
 
 	return 0;
 }
