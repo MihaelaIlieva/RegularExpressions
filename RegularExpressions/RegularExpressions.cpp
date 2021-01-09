@@ -22,6 +22,16 @@ using namespace std;
 //the specialSymbols array keeps the symbols that are regex operations
 char specialSymbols[] = { '^','.','*','+','?','\\','\0' };
 
+// seeks out as many symbols as possible that are the same as the symbol before the '*' operator
+// sets the index to the last found match +1 and returns true
+bool CaughtZeroOrManySymbols(char searchedChar, int& currentIndexInText, string text) {
+	while (text[currentIndexInText] == searchedChar && currentIndexInText >= 0) {
+		currentIndexInText--;
+	}
+	currentIndexInText++;
+	return true;
+}
+
 // checking if a given regex command is valid based on the given criteria
 bool IsRegexValid(string regex) {
 	//keeping the count of the special symbols in order not to exceed the limit
@@ -78,27 +88,43 @@ bool IsRegexValid(string regex) {
 }
 
 // if the regex is only of ordinary symbols, we check if it is contained in the text from the file
-bool IsRegexExpressionContainedInString(string regexp, string s)
+bool IsRegexExpressionContainedInString(string regex, string text)
 {
-	int IndexOfRegexExpression = regexp.size() - 1;
-	for (int i = s.size() - 1; i >= 0; i--) {
-		//cout << s[i];
-		//If it is just a normal symbol
-			//we try to match it with the string symbol
-		if (s[i] == regexp[IndexOfRegexExpression]) {
-			// on success we move on to the next symbol for matching
-			IndexOfRegexExpression--;
+	int IndexOfRegexExpression = regex.size() - 1;
+	for (int i = text.size() - 1; i >= 0; i--) {
+
+		if (regex[IndexOfRegexExpression] == '*') {
+			if (CaughtZeroOrManySymbols(regex[IndexOfRegexExpression - 1], i, text)) {
+				IndexOfRegexExpression-=2;
+			}
+			else {
+				IndexOfRegexExpression = regex.size() - 1;
+			}
 		}
 		else {
-			//on fail we reset try again to match the last symbol of the expression 
-			IndexOfRegexExpression = regexp.size() - 1;
+			//cout << s[i];
+		//If it is just a normal symbol
+			//we try to match it with the string symbol
+			if (text[i] == regex[IndexOfRegexExpression]) {
+				// on success we move on to the next symbol for matching
+				IndexOfRegexExpression--;
+			}
+			else {
+				//on fail we reset try again to match the last symbol of the expression 
+				IndexOfRegexExpression = regex.size() - 1;
+			}
+			if (IndexOfRegexExpression < 0) {
+				return true;
+			}
 		}
-		if (IndexOfRegexExpression < 0) {
-			return true;
-		}
+
+		
 	}
 	return false;
 }
+
+
+
 
 int main() {
 
@@ -138,6 +164,8 @@ int main() {
 	/*cout << textFromFile;*/
 
 	myFile.close();
+
+	//cout << IsRegexExpressionContainedInString(regexCommand, textFromFile);
 
 	return 0;
 }
