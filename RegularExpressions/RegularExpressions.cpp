@@ -23,6 +23,16 @@ using namespace std;
 //the specialSymbols array keeps the symbols that are regex operations
 char specialSymbols[] = { '^','.','*','+','?','\\','\0' };
 
+bool AnySymbol(string searchedString, int& currentIndexInText, string text) {
+	if (currentIndexInText >= text.size()) {
+		return false;
+	}
+	else {
+		currentIndexInText++;
+		return true;
+	}
+}
+// ^
 bool Anchored(string searchedString, int& currentIndexInText, string text) {
 	return currentIndexInText == 0;
 }
@@ -182,6 +192,15 @@ void ConvertRegexexpressionToFunctions(string regex) {
 		}
 		else if (regex[i] == '^') {
 			functions.push_back({ "",Anchored });
+		}
+		else if (regex[i] == '.') {
+			
+			if (!toBeCaught.empty()) {
+				functions.push_back({ toBeCaught,CaughtString });
+			}
+			//clearing it
+			toBeCaught = "";
+			functions.push_back({ "",AnySymbol});
 		}
 		// if is an ordinary symbol
 		else {
