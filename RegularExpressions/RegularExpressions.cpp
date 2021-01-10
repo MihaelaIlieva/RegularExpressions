@@ -259,12 +259,22 @@ int main() {
 	}
 	// textFromFile will keep the text from the file in order to work easier with the information
 	string textFromFile;
-
-	//adding each line of the file to the textFromFile string untill we have reached the end of the file
+	string* linesToCheck=NULL;
+	int countOfLines = 0;
 	while (!myFile.eof()) {
 		string currentLine;
 		getline(myFile, currentLine);
-		textFromFile += currentLine+"\n";
+		countOfLines++;
+	}
+	linesToCheck = new string[countOfLines];
+	myFile.clear();
+	myFile.seekg(0);
+	//adding each line of the file to the textFromFile string untill we have reached the end of the file
+	for (size_t i = 0; i < countOfLines; i++)
+	{
+		string currentLine;
+		getline(myFile, currentLine);
+		linesToCheck[i] = currentLine;
 	}
 	//cout << IsRegexValid(regexCommand);
 	/*cout << textFromFile;*/
@@ -272,7 +282,12 @@ int main() {
 	myFile.close();
 
 	ConvertRegexexpressionToFunctions(regexCommand);
-	cout << OccurrencesOfRegexExpressionInString(textFromFile);
+	
+	for (size_t i = 0; i < countOfLines; i++)
+	{
+		string a = linesToCheck[i];
+		cout << OccurrencesOfRegexExpressionInString(linesToCheck[i]);
+	}
 	
 	return 0;
 }

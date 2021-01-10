@@ -4,4 +4,6 @@ C:\Users\User\source\repos\RegularExpressions\RegularExpressions\RegularExpressi
 C:\Users\User\source\repos\RegularExpressions\RegularExpressions\RegularExpressions.cpp(80,23): warning C4018: '<=': signed/unsigned mismatch
 C:\Users\User\source\repos\RegularExpressions\RegularExpressions\RegularExpressions.cpp(83,32): warning C4018: '>': signed/unsigned mismatch
 C:\Users\User\source\repos\RegularExpressions\RegularExpressions\RegularExpressions.cpp(220,20): warning C4018: '<=': signed/unsigned mismatch
+C:\Users\User\source\repos\RegularExpressions\RegularExpressions\RegularExpressions.cpp(273,23): warning C4018: '<': signed/unsigned mismatch
+C:\Users\User\source\repos\RegularExpressions\RegularExpressions\RegularExpressions.cpp(286,23): warning C4018: '<': signed/unsigned mismatch
   RegularExpressions.vcxproj -> C:\Users\User\source\repos\RegularExpressions\Debug\RegularExpressions.exe
