@@ -1,1 +1,2 @@
-\asttt+rgx
+aabaaacbbbb
+abc

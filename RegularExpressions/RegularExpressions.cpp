@@ -23,6 +23,10 @@ using namespace std;
 //the specialSymbols array keeps the symbols that are regex operations
 char specialSymbols[] = { '^','.','*','+','?','\\','\0' };
 
+bool Anchored(string searchedString, int& currentIndexInText, string text) {
+	return currentIndexInText == 0;
+}
+
 // seeks out as many symbols as possible that are the same as the symbol before the '*' operator
 // sets the index to the last found match +1 and returns true
 bool CaughtZeroOrManySymbols(string searchedString, int& currentIndexInText, string text) {
@@ -175,6 +179,9 @@ void ConvertRegexexpressionToFunctions(string regex) {
 			char escapedSymbol = regex[i + 1];
 			toBeCaught.push_back(escapedSymbol);
 			i++;
+		}
+		else if (regex[i] == '^') {
+			functions.push_back({ "",Anchored });
 		}
 		// if is an ordinary symbol
 		else {
