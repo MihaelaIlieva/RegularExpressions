@@ -19,9 +19,8 @@
 #include <vector>
 
 using namespace std;
-typedef vector< pair<string, bool (*)(string searchedChar, int& currentIndexInText, string text)>> FunctionVector;
-//the specialSymbols array keeps the symbols that are regex operations
 
+typedef vector< pair<string, bool (*)(string searchedChar, int& currentIndexInText, string text)>> FunctionVector;
 
 // '.' logic
 bool AnySymbol(string searchedString, int& currentIndexInText, string text) {
@@ -43,8 +42,7 @@ bool Anchored(string searchedString, int& currentIndexInText, string text) {
 bool CaughtZeroOrManySymbols(string searchedString, int& currentIndexInText, string text) {
 	while (text[currentIndexInText] == searchedString[0] && currentIndexInText >= 0) {
 		currentIndexInText++;
-	}
-	
+	}	
 	return true;
 }
 
@@ -65,7 +63,6 @@ bool CaughtZeroOrOneSymbols(string searchedString, int& currentIndexInText, stri
 	if (text[currentIndexInText] == searchedString[0] && currentIndexInText >= 0) {
 		currentIndexInText++;
 	}
-
 	return true;
 }
 
@@ -77,23 +74,17 @@ bool CaughtString(string toMatchWith, int& currentTextIndex, string text) {
 	if (toMatchWith.empty()) {
 		return true;
 	}
-	while (text[currentTextIndex] == toMatchWith[indexOfStringToMatchWith] && indexOfStringToMatchWith <= (int)toMatchWith.size()
-		&& currentTextIndex <= (int)text.size()) {
+	while (text[currentTextIndex] == toMatchWith[indexOfStringToMatchWith] && indexOfStringToMatchWith <= (int)toMatchWith.size()&& currentTextIndex <= (int)text.size()) {
 		indexOfStringToMatchWith++;
 		currentTextIndex++;
 		if (indexOfStringToMatchWith > (int)toMatchWith.size() - 1) {
-			
 			return true;
 		}
 	}
 	currentTextIndex = originalIndex;
 	return false;
 }
-// checking if a given regex command is valid based on the given criteria
-
-
-//
-
+//gets the last symbol of the string and removes it from it
 string GetLastSymbolAndRemoveIt(string& toBeCaught) {
 	string lastSymbol = string(1, toBeCaught.back());
 	toBeCaught.pop_back();
@@ -110,87 +101,85 @@ void PushToCaughtString(string& toBeCaught, FunctionVector& functions) {
 
 bool ConvertRegexExpressionToFunctions(string regex, FunctionVector& functions) {
 	string toBeCaught = "";
-	int specialsymbolscount = 0;
-
-	
-		for (size_t i = 0; i < regex.size(); i++) {
-			if (regex[i] == '*') {
-				if (toBeCaught.empty()) {
+	int specialsymbolscount = 0;	
+	for (size_t i = 0; i < regex.size(); i++) {
+		if (regex[i] == '*') {
+			if (toBeCaught.empty()) {
 					return false;
-				}
-				string lastSymbol = GetLastSymbolAndRemoveIt(toBeCaught);
-				PushToCaughtString(toBeCaught,functions);
-				functions.push_back({ lastSymbol,CaughtZeroOrManySymbols });
-
 			}
-			else if (regex[i] == '+') {
-				if (toBeCaught.empty()) {
-					return false;
-				}
-				string lastSymbol = GetLastSymbolAndRemoveIt(toBeCaught);
-				PushToCaughtString(toBeCaught,functions);
-				functions.push_back({ lastSymbol,CaughtOneOrManySymbols });
+			string lastSymbol = GetLastSymbolAndRemoveIt(toBeCaught);
+			PushToCaughtString(toBeCaught,functions);
+			functions.push_back({ lastSymbol,CaughtZeroOrManySymbols });
 
+		}
+		else if (regex[i] == '+') {
+			if (toBeCaught.empty()) {
+				return false;
 			}
-			else if (regex[i] == '?') {
-				if (toBeCaught.empty()) {
-					return false;
-				}
-				string lastSymbol = GetLastSymbolAndRemoveIt(toBeCaught);
-				PushToCaughtString(toBeCaught,functions);
-				functions.push_back({ lastSymbol, CaughtZeroOrOneSymbols });
+			string lastSymbol = GetLastSymbolAndRemoveIt(toBeCaught);
+			PushToCaughtString(toBeCaught,functions);
+			functions.push_back({ lastSymbol,CaughtOneOrManySymbols });
 
+		}
+		else if (regex[i] == '?') {
+			if (toBeCaught.empty()) {
+				return false;
 			}
-			else if (regex[i] == '\\') {
+			string lastSymbol = GetLastSymbolAndRemoveIt(toBeCaught);
+			PushToCaughtString(toBeCaught,functions);
+			functions.push_back({ lastSymbol, CaughtZeroOrOneSymbols });
 
-				if (i == regex.size() - 1) {
-					return false;
-				}
-				// isSpecialSymbol shows if the symbol after the '\' is special
-				bool isSpecialSymbol = false;
+		}
+		else if (regex[i] == '\\') {
 
-				char specialSymbols[] = { '^','.','*','+','?','\\','\0' };
-				// checking if the symbol after the '\'is special
-				for (size_t j = 0; j < 6; j++) {
+			if (i == regex.size() - 1) {
+				return false;
+			}
+			// isSpecialSymbol shows if the symbol after the '\' is special
+			bool isSpecialSymbol = false;
 
-					if (regex[i + 1] == specialSymbols[j]) {
-						isSpecialSymbol = true;
-					}
+			char specialSymbols[] = { '^','.','*','+','?','\\','\0' };
+			// checking if the symbol after the '\'is special
+			for (size_t j = 0; j < 6; j++) {
+
+				if (regex[i + 1] == specialSymbols[j]) {
+					isSpecialSymbol = true;
 				}
-				// if the next symbol is not special, the regex is invalid
-				if (!isSpecialSymbol) {
-					return false;
-				}
-				else {
-					char escapedSymbol = regex[i + 1];
-					toBeCaught.push_back(escapedSymbol);
-					i++;
-				}
+			}
+			// if the next symbol is not special, the regex is invalid
+			if (!isSpecialSymbol) {
+				return false;
+			}
+		    else {
+				char escapedSymbol = regex[i + 1];
+				toBeCaught.push_back(escapedSymbol);
+				i++;
+			}
 							
-			}
-			else if (regex[i] == '^') {
-				if (i != 0) {
-					return false;
-				}
-				functions.push_back({ "",Anchored });
-			}
-			else if (regex[i] == '.') {
-				PushToCaughtString(toBeCaught,functions);
-				functions.push_back({ "",AnySymbol });
-			}
-			// if is an ordinary symbol
-			else {
-				toBeCaught.push_back(regex[i]);
-			}
 		}
+		else if (regex[i] == '^') {
+			if (i != 0) {
+				return false;
+			}
+			functions.push_back({ "",Anchored });
+		}
+		else if (regex[i] == '.') {
+			PushToCaughtString(toBeCaught,functions);
+			functions.push_back({ "",AnySymbol });
+		}
+		// if is an ordinary symbol
+		else {
+			toBeCaught.push_back(regex[i]);
+		}
+	}
 		
-		if (!toBeCaught.empty()) {
-			functions.push_back({ toBeCaught,CaughtString });
-		}
+	if (!toBeCaught.empty()) {
+		functions.push_back({ toBeCaught,CaughtString });
+	}
 	return true;
 }
 
-//changed if regex is contained in text with the newly implemented logic and now the function counts the occurences of the regex in text
+//prints the occurences of wanted regular expression search
 void OccurrencesOfRegexExpressionInString(string text, FunctionVector& functions){
 	int index = 0;
 	int numberOfCaught = 0;
@@ -205,6 +194,9 @@ void OccurrencesOfRegexExpressionInString(string text, FunctionVector& functions
 		}
 		if (caught) {
 			int lastIndexOfCaughtMatch = i;
+			if (functions.size() == 1 && functions[0].second == Anchored) {
+				lastIndexOfCaughtMatch = text.size() - 1;
+			}
 			numberOfCaught++;
 			for (int t = startIndexOfCaughtMatch; t < lastIndexOfCaughtMatch; t++) {
 				cout << text[t];
@@ -214,12 +206,12 @@ void OccurrencesOfRegexExpressionInString(string text, FunctionVector& functions
 	}
 }
 
-
 FunctionVector ReadValidRegexCommand() {
 	string regexCommand;
 	cout << "Insert a regex command: \n";
 	cin >> regexCommand;
 	FunctionVector functions;
+
 	// validating the command and waiting for a valid one to be inserted in order to start working
 	while (!ConvertRegexExpressionToFunctions(regexCommand,functions)) {
 		cout << " Please insert a valid regex command! : \n";
@@ -255,8 +247,7 @@ int NumberOfLinesInTextFile( string& textFileName) {
 		getline(myFile, currentLine);
 		countOfLines++;
 	}
-	return countOfLines;
-	
+	return countOfLines;	
 }
 
 void ReadLinesFromFile(string& textFileName,string*& linesToCheck, int countOfLines){
@@ -284,11 +275,8 @@ int main() {
 	int numberOfLinesInFile= NumberOfLinesInTextFile(textFileName);
 	string* linesToCheck = new string[numberOfLinesInFile];
 	ReadLinesFromFile(textFileName, linesToCheck, numberOfLinesInFile);
-
-	//the regex expression represented with boolean functions
 	
-
-
+    // getting all matches of all lines
 	for (int i = 0; i < numberOfLinesInFile; i++) {
 		string a = linesToCheck[i];
 		OccurrencesOfRegexExpressionInString(linesToCheck[i], functions);
