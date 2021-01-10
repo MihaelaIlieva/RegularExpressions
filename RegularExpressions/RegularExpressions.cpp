@@ -27,9 +27,9 @@ char specialSymbols[] = { '^','.','*','+','?','\\','\0' };
 // sets the index to the last found match +1 and returns true
 bool CaughtZeroOrManySymbols(string searchedString, int& currentIndexInText, string text) {
 	while (text[currentIndexInText] == searchedString[0] && currentIndexInText >= 0) {
-		currentIndexInText--;
+		currentIndexInText++;
 	}
-	currentIndexInText++;
+	
 	return true;
 }
 
@@ -40,9 +40,9 @@ bool CaughtOneOrManySymbols(string searchedString, int& currentIndexInText, stri
 	while (text[currentIndexInText] == searchedString[0] && currentIndexInText >= 0)
 	{
 		atLeastOne = true;
-		currentIndexInText--;
+		currentIndexInText++;
 	}
-	currentIndexInText++;
+	
 	return atLeastOne;
 }
 
@@ -50,9 +50,9 @@ bool CaughtOneOrManySymbols(string searchedString, int& currentIndexInText, stri
 // sets the index to the last found match +1 and returns if there are zero or one symbols equal to the one before '?'
 bool CaughtZeroOrOneSymbols(string searchedString, int& currentIndexInText, string text) {
 	if (text[currentIndexInText] == searchedString[0] && currentIndexInText >= 0) {
-		currentIndexInText--;
+		currentIndexInText++;
 	}
-	currentIndexInText++;
+
 	return true;
 }
 bool CaughtString(string toMatchWith, int& currentTextIndex, string text) {
@@ -180,56 +180,24 @@ void ConvertRegexexpressionToFunctions(string regex) {
 	}
 }
 
-// if the regex is only of ordinary symbols, we check if it is contained in the text from the file
-bool IsRegexExpressionContainedInString(string regex, string text)
+//changed if regex is contained in text with the newly implemented logic and now the function counts the occurences of the regex in text
+int OccurrencesOfRegexExpressionInString(string text)
 {
-	int IndexOfRegexExpression = regex.size() - 1;
-	for (int i = text.size() - 1; i >= 0; i--) {
-
-		if (regex[IndexOfRegexExpression] == '*') {
-			if (CaughtZeroOrManySymbols(string(1,regex[IndexOfRegexExpression - 1]), i, text)) {
-				IndexOfRegexExpression-=2;
-			}
-			else {
-				IndexOfRegexExpression = regex.size() - 1;
-			}
-		}
-		else if (regex[IndexOfRegexExpression] == '+') {
-			if (CaughtOneOrManySymbols(string(1, regex[IndexOfRegexExpression - 1]), i, text)) {
-				IndexOfRegexExpression -= 2;
-			}
-			else {
-				IndexOfRegexExpression = regex.size() - 1;
+	int index = 0;
+	int numberOfCaught = 0;
+	for (int i = 0; i <= text.size() - 1; i++) {
+		bool caught = true;
+		for (size_t j = 0; j < functions.size(); j++) {
+			if (!functions[j].second(functions[j].first, i, text)) {
+				caught = false;
+				break;
 			}
 		}
-		else if (regex[IndexOfRegexExpression] == '?') {
-			if (CaughtZeroOrOneSymbols(string(1, regex[IndexOfRegexExpression - 1]), i, text)) {
-				IndexOfRegexExpression -= 2;
-			}
-			else {
-				IndexOfRegexExpression = regex.size() - 1;
-			}
+		if (caught) {
+			numberOfCaught++;
 		}
-		else {
-			//cout << s[i];
-		//If it is just a normal symbol
-			//we try to match it with the string symbol
-			if (text[i] == regex[IndexOfRegexExpression]) {
-				// on success we move on to the next symbol for matching
-				IndexOfRegexExpression--;
-			}
-			else {
-				//on fail we reset try again to match the last symbol of the expression 
-				IndexOfRegexExpression = regex.size() - 1;
-			}
-			if (IndexOfRegexExpression < 0) {
-				return true;
-			}
-		}
-
-		
 	}
-	return false;
+	return numberOfCaught;
 }
 
 int main() {
@@ -272,7 +240,7 @@ int main() {
 	myFile.close();
 
 	ConvertRegexexpressionToFunctions(regexCommand);
-	cout << IsRegexExpressionContainedInString(regexCommand, textFromFile);
+	cout << OccurrencesOfRegexExpressionInString(textFromFile);
 	
 	return 0;
 }
