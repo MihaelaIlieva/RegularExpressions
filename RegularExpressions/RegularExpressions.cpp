@@ -19,10 +19,11 @@
 #include <vector>
 
 using namespace std;
-
+typedef vector< pair<string, bool (*)(string searchedChar, int& currentIndexInText, string text)>> FunctionVector;
 //the specialSymbols array keeps the symbols that are regex operations
-char specialSymbols[] = { '^','.','*','+','?','\\','\0' };
 
+
+// '.' logic
 bool AnySymbol(string searchedString, int& currentIndexInText, string text) {
 	if (currentIndexInText >= (int)text.size()) {
 		return false;
@@ -32,7 +33,7 @@ bool AnySymbol(string searchedString, int& currentIndexInText, string text) {
 		return true;
 	}
 }
-// ^
+// '^' logic
 bool Anchored(string searchedString, int& currentIndexInText, string text) {
 	return currentIndexInText == 0;
 }
@@ -67,6 +68,8 @@ bool CaughtZeroOrOneSymbols(string searchedString, int& currentIndexInText, stri
 
 	return true;
 }
+
+// searches for a given string from an index from the text
 bool CaughtString(string toMatchWith, int& currentTextIndex, string text) {
 
 	int indexOfStringToMatchWith = 0;
@@ -88,21 +91,24 @@ bool CaughtString(string toMatchWith, int& currentTextIndex, string text) {
 }
 // checking if a given regex command is valid based on the given criteria
 
-vector< pair<string, bool (*)(string searchedChar, int& currentIndexInText, string text)>> functions;
 
-string PushToCaughtStringAndGetLastSymbol(string& toBeCaught) {
-	
+//
+
+string GetLastSymbolAndRemoveIt(string& toBeCaught) {
 	string lastSymbol = string(1, toBeCaught.back());
 	toBeCaught.pop_back();
+	return lastSymbol;
+}
+
+void PushToCaughtString(string& toBeCaught, FunctionVector& functions) {
 	if (!toBeCaught.empty()) {
 		functions.push_back({ toBeCaught,CaughtString });
 	}
 	//clearing it
 	toBeCaught = "";
-	return lastSymbol;
 }
 
-bool ConvertRegexexpressionToFunctions(string regex) {
+bool ConvertRegexExpressionToFunctions(string regex, FunctionVector& functions) {
 	string toBeCaught = "";
 	int specialsymbolscount = 0;
 
@@ -112,7 +118,8 @@ bool ConvertRegexexpressionToFunctions(string regex) {
 				if (toBeCaught.empty()) {
 					return false;
 				}
-				string lastSymbol = PushToCaughtStringAndGetLastSymbol(toBeCaught);
+				string lastSymbol = GetLastSymbolAndRemoveIt(toBeCaught);
+				PushToCaughtString(toBeCaught,functions);
 				functions.push_back({ lastSymbol,CaughtZeroOrManySymbols });
 
 			}
@@ -120,7 +127,8 @@ bool ConvertRegexexpressionToFunctions(string regex) {
 				if (toBeCaught.empty()) {
 					return false;
 				}
-				string lastSymbol = PushToCaughtStringAndGetLastSymbol(toBeCaught);
+				string lastSymbol = GetLastSymbolAndRemoveIt(toBeCaught);
+				PushToCaughtString(toBeCaught,functions);
 				functions.push_back({ lastSymbol,CaughtOneOrManySymbols });
 
 			}
@@ -128,7 +136,8 @@ bool ConvertRegexexpressionToFunctions(string regex) {
 				if (toBeCaught.empty()) {
 					return false;
 				}
-				string lastSymbol = PushToCaughtStringAndGetLastSymbol(toBeCaught);
+				string lastSymbol = GetLastSymbolAndRemoveIt(toBeCaught);
+				PushToCaughtString(toBeCaught,functions);
 				functions.push_back({ lastSymbol, CaughtZeroOrOneSymbols });
 
 			}
@@ -139,6 +148,8 @@ bool ConvertRegexexpressionToFunctions(string regex) {
 				}
 				// isSpecialSymbol shows if the symbol after the '\' is special
 				bool isSpecialSymbol = false;
+
+				char specialSymbols[] = { '^','.','*','+','?','\\','\0' };
 				// checking if the symbol after the '\'is special
 				for (size_t j = 0; j < 6; j++) {
 
@@ -164,11 +175,7 @@ bool ConvertRegexexpressionToFunctions(string regex) {
 				functions.push_back({ "",Anchored });
 			}
 			else if (regex[i] == '.') {
-				if (!toBeCaught.empty()) {
-					functions.push_back({ toBeCaught,CaughtString });
-				}
-				//clearing it
-				toBeCaught = "";
+				PushToCaughtString(toBeCaught,functions);
 				functions.push_back({ "",AnySymbol });
 			}
 			// if is an ordinary symbol
@@ -184,8 +191,7 @@ bool ConvertRegexexpressionToFunctions(string regex) {
 }
 
 //changed if regex is contained in text with the newly implemented logic and now the function counts the occurences of the regex in text
-void OccurrencesOfRegexExpressionInString(string text)
-{
+void OccurrencesOfRegexExpressionInString(string text, FunctionVector& functions){
 	int index = 0;
 	int numberOfCaught = 0;
 	for (int i = 0; i <= (int)text.size() - 1; i++) {
@@ -208,59 +214,85 @@ void OccurrencesOfRegexExpressionInString(string text)
 	}
 }
 
-int main() {
 
-   // inserting the command for the file	
+FunctionVector ReadValidRegexCommand() {
 	string regexCommand;
 	cout << "Insert a regex command: \n";
 	cin >> regexCommand;
+	FunctionVector functions;
 	// validating the command and waiting for a valid one to be inserted in order to start working
-	while (!ConvertRegexexpressionToFunctions(regexCommand)) {
+	while (!ConvertRegexExpressionToFunctions(regexCommand,functions)) {
 		cout << " Please insert a valid regex command! : \n";
 		functions.clear();
 		cin >> regexCommand;
 	}
-	// inserting the name of the text file
-	string textFileName;
-	cout << "Insert a file name in which the program should check for matches: \n";
-	cin >> textFileName;
+	return functions;
+}
 
+void CheckValidityOfFilename(string& textFileName) {
 	// opening the file with the name given by the user
 	fstream myFile;
 	myFile.open(textFileName, fstream::in);
+
 	//checking if there is a problem opening the file and asking for a new file that the program can work with
 	while (!myFile.is_open()) {
 		cout << "Please insert a valid file name in the correct dirrectory! : \n";
 		cin >> textFileName;
 		myFile.open(textFileName, fstream::in);
 	}
-	// textFromFile will keep the text from the file in order to work easier with the information
-	string textFromFile;
-	string* linesToCheck=NULL;
+
+	myFile.close();
+}
+
+int NumberOfLinesInTextFile( string& textFileName) {
+	// opening the file with the name given by the user
+	fstream myFile;
+	myFile.open(textFileName, fstream::in);
+	
 	int countOfLines = 0;
 	while (!myFile.eof()) {
 		string currentLine;
 		getline(myFile, currentLine);
 		countOfLines++;
 	}
-	linesToCheck = new string[countOfLines];
-	myFile.clear();
-	myFile.seekg(0);
+	return countOfLines;
+	
+}
+
+void ReadLinesFromFile(string& textFileName,string*& linesToCheck, int countOfLines){
+	fstream myFile;
+	myFile.open(textFileName, fstream::in);
 	//adding each line of the file to the textFromFile string untill we have reached the end of the file
 	for (int i = 0; i < countOfLines; i++) {
 		string currentLine;
 		getline(myFile, currentLine);
 		linesToCheck[i] = currentLine;
 	}
-	//cout << IsRegexValid(regexCommand);
-	/*cout << textFromFile;*/
-
 	myFile.close();
+}
 
-	for (int i = 0; i < countOfLines; i++) {
-		string a = linesToCheck[i];
-		OccurrencesOfRegexExpressionInString(linesToCheck[i]);
-	}
+int main() {
 	
+   // inserting the command for the file	
+	FunctionVector functions = ReadValidRegexCommand();
+
+	// inserting the name of the text file
+	string textFileName;
+	cout << "Insert a file name in which the program should check for matches: \n";
+	cin >> textFileName;
+	CheckValidityOfFilename(textFileName);
+	int numberOfLinesInFile= NumberOfLinesInTextFile(textFileName);
+	string* linesToCheck = new string[numberOfLinesInFile];
+	ReadLinesFromFile(textFileName, linesToCheck, numberOfLinesInFile);
+
+	//the regex expression represented with boolean functions
+	
+
+
+	for (int i = 0; i < numberOfLinesInFile; i++) {
+		string a = linesToCheck[i];
+		OccurrencesOfRegexExpressionInString(linesToCheck[i], functions);
+	}
+	delete[] linesToCheck;
 	return 0;
 }
