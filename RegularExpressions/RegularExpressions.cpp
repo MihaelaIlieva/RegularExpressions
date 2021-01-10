@@ -213,12 +213,13 @@ void ConvertRegexexpressionToFunctions(string regex) {
 }
 
 //changed if regex is contained in text with the newly implemented logic and now the function counts the occurences of the regex in text
-int OccurrencesOfRegexExpressionInString(string text)
+void OccurrencesOfRegexExpressionInString(string text)
 {
 	int index = 0;
 	int numberOfCaught = 0;
 	for (int i = 0; i <= text.size() - 1; i++) {
 		bool caught = true;
+		int startIndexOfCaughtMatch = i;
 		for (size_t j = 0; j < functions.size(); j++) {
 			if (!functions[j].second(functions[j].first, i, text)) {
 				caught = false;
@@ -226,10 +227,15 @@ int OccurrencesOfRegexExpressionInString(string text)
 			}
 		}
 		if (caught) {
+			int lastIndexOfCaughtMatch = i;
 			numberOfCaught++;
+			for (size_t t = startIndexOfCaughtMatch; t < lastIndexOfCaughtMatch; t++)
+			{
+				cout << text[t];
+			}
+			cout << endl;
 		}
 	}
-	return numberOfCaught;
 }
 
 int main() {
@@ -286,7 +292,7 @@ int main() {
 	for (size_t i = 0; i < countOfLines; i++)
 	{
 		string a = linesToCheck[i];
-		cout << OccurrencesOfRegexExpressionInString(linesToCheck[i]);
+		OccurrencesOfRegexExpressionInString(linesToCheck[i]);
 	}
 	
 	return 0;
