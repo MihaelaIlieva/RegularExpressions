@@ -25,8 +25,8 @@ char specialSymbols[] = { '^','.','*','+','?','\\','\0' };
 
 // seeks out as many symbols as possible that are the same as the symbol before the '*' operator
 // sets the index to the last found match +1 and returns true
-bool CaughtZeroOrManySymbols(char searchedChar, int& currentIndexInText, string text) {
-	while (text[currentIndexInText] == searchedChar && currentIndexInText >= 0) {
+bool CaughtZeroOrManySymbols(string searchedString, int& currentIndexInText, string text) {
+	while (text[currentIndexInText] == searchedString[0] && currentIndexInText >= 0) {
 		currentIndexInText--;
 	}
 	currentIndexInText++;
@@ -35,9 +35,9 @@ bool CaughtZeroOrManySymbols(char searchedChar, int& currentIndexInText, string 
 
 // seeks out as many symbols as possible (at least one) that are the same as the symbol before the '+' operator
 // sets the index to the last found match +1 and returns if there is at least one symbol equal to the one before '+'
-bool CaughtOneOrManySymbols(char searchedChar, int& currentIndexInText, string text) {
+bool CaughtOneOrManySymbols(string searchedString, int& currentIndexInText, string text) {
 	bool atLeastOne = false;
-	while (text[currentIndexInText] == searchedChar && currentIndexInText >= 0)
+	while (text[currentIndexInText] == searchedString[0] && currentIndexInText >= 0)
 	{
 		atLeastOne = true;
 		currentIndexInText--;
@@ -48,14 +48,31 @@ bool CaughtOneOrManySymbols(char searchedChar, int& currentIndexInText, string t
 
 // seeks out if there are zero or one symbols that are the same as the symbol before the '?' operator
 // sets the index to the last found match +1 and returns if there are zero or one symbols equal to the one before '?'
-bool CaughtZeroOrOneSymbols(char searchedChar, int& currentIndexInText, string text) {
-	if (text[currentIndexInText] == searchedChar && currentIndexInText >= 0) {
+bool CaughtZeroOrOneSymbols(string searchedString, int& currentIndexInText, string text) {
+	if (text[currentIndexInText] == searchedString[0] && currentIndexInText >= 0) {
 		currentIndexInText--;
 	}
 	currentIndexInText++;
 	return true;
 }
+bool CaughtString(string toMatchWith, int& currentTextIndex, string text) {
 
+	int indexOfStringToMatchWith = 0;
+	int originalIndex = currentTextIndex;
+	if (toMatchWith.empty()) {
+		return true;
+	}
+	while (text[currentTextIndex] == toMatchWith[indexOfStringToMatchWith] && indexOfStringToMatchWith <= toMatchWith.size()
+		&& currentTextIndex <= text.size()) {
+		indexOfStringToMatchWith++;
+		currentTextIndex++;
+		if (indexOfStringToMatchWith >= toMatchWith.size() - 1) {
+			return true;
+		}
+	}
+	currentTextIndex = originalIndex;
+	return false;
+}
 // checking if a given regex command is valid based on the given criteria
 bool IsRegexValid(string regex) {
 	//keeping the count of the special symbols in order not to exceed the limit
@@ -110,20 +127,19 @@ bool IsRegexValid(string regex) {
 		return true;
 	}	
 }
-vector< pair<char, bool (*)(char searchedChar, int& currentIndexInText, string text)>> functions;
+vector< pair<string, bool (*)(string searchedChar, int& currentIndexInText, string text)>> functions;
 
 void ConvertRegexexpressionToFunctions(string regex) {
 	string toBeCaught = "";
 	int specialsymbolscount = 0;
 
-	for (size_t i = 0; i < regex.size(); i++)
-	{
+	for (size_t i = 0; i < regex.size(); i++) {
 		if (regex[i] == '*') {
 
-			char lastSymbol = toBeCaught.back();
+			string lastSymbol = string(1,toBeCaught.back());
 			toBeCaught.pop_back();
 			if (!toBeCaught.empty()) {
-				// pushing it back to CaughtString
+				functions.push_back({ toBeCaught,CaughtString });
 			}
 			//clearing it
 			toBeCaught = "";
@@ -132,10 +148,10 @@ void ConvertRegexexpressionToFunctions(string regex) {
 		}
 		else if (regex[i] == '+') {
 
-			char lastSymbol = toBeCaught.back();
+			string lastSymbol = string(1, toBeCaught.back());
 			toBeCaught.pop_back();
 			if (!toBeCaught.empty()) {
-				// pushing it back to CaughtString
+				functions.push_back({ toBeCaught,CaughtString });
 			}
 			//clearing it
 			toBeCaught = "";
@@ -144,10 +160,10 @@ void ConvertRegexexpressionToFunctions(string regex) {
 		}
 		else if (regex[i] == '?') {
 
-			char lastSymbol = toBeCaught.back();
+			string lastSymbol = string(1, toBeCaught.back());
 			toBeCaught.pop_back();
 			if (!toBeCaught.empty()) {
-				// pushing it back to CaughtString
+				functions.push_back({ toBeCaught,CaughtString });
 			}
 			//clearing it
 			toBeCaught = "";
@@ -155,15 +171,14 @@ void ConvertRegexexpressionToFunctions(string regex) {
 
 		}
 		// if is an ordinary symbol
-		else
-		{
+		else {
 			toBeCaught.push_back(regex[i]);
 		}
 	}
+	if (!toBeCaught.empty()) {
+		functions.push_back({ toBeCaught,CaughtString });
+	}
 }
-//bool CaughtString(string toMatchWith, int& currentTextIndex, const string text) {
-//	//to implement
-//}
 
 // if the regex is only of ordinary symbols, we check if it is contained in the text from the file
 bool IsRegexExpressionContainedInString(string regex, string text)
@@ -172,7 +187,7 @@ bool IsRegexExpressionContainedInString(string regex, string text)
 	for (int i = text.size() - 1; i >= 0; i--) {
 
 		if (regex[IndexOfRegexExpression] == '*') {
-			if (CaughtZeroOrManySymbols(regex[IndexOfRegexExpression - 1], i, text)) {
+			if (CaughtZeroOrManySymbols(string(1,regex[IndexOfRegexExpression - 1]), i, text)) {
 				IndexOfRegexExpression-=2;
 			}
 			else {
@@ -180,7 +195,7 @@ bool IsRegexExpressionContainedInString(string regex, string text)
 			}
 		}
 		else if (regex[IndexOfRegexExpression] == '+') {
-			if (CaughtOneOrManySymbols(regex[IndexOfRegexExpression - 1], i, text)) {
+			if (CaughtOneOrManySymbols(string(1, regex[IndexOfRegexExpression - 1]), i, text)) {
 				IndexOfRegexExpression -= 2;
 			}
 			else {
@@ -188,7 +203,7 @@ bool IsRegexExpressionContainedInString(string regex, string text)
 			}
 		}
 		else if (regex[IndexOfRegexExpression] == '?') {
-			if (CaughtZeroOrOneSymbols(regex[IndexOfRegexExpression - 1], i, text)) {
+			if (CaughtZeroOrOneSymbols(string(1, regex[IndexOfRegexExpression - 1]), i, text)) {
 				IndexOfRegexExpression -= 2;
 			}
 			else {
@@ -216,9 +231,6 @@ bool IsRegexExpressionContainedInString(string regex, string text)
 	}
 	return false;
 }
-
-
-
 
 int main() {
 
@@ -262,6 +274,5 @@ int main() {
 	ConvertRegexexpressionToFunctions(regexCommand);
 	cout << IsRegexExpressionContainedInString(regexCommand, textFromFile);
 	
-
 	return 0;
 }
