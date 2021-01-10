@@ -16,6 +16,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <vector>
 
 using namespace std;
 
@@ -109,6 +110,60 @@ bool IsRegexValid(string regex) {
 		return true;
 	}	
 }
+vector< pair<char, bool (*)(char searchedChar, int& currentIndexInText, string text)>> functions;
+
+void ConvertRegexexpressionToFunctions(string regex) {
+	string toBeCaught = "";
+	int specialsymbolscount = 0;
+
+	for (size_t i = 0; i < regex.size(); i++)
+	{
+		if (regex[i] == '*') {
+
+			char lastSymbol = toBeCaught.back();
+			toBeCaught.pop_back();
+			if (!toBeCaught.empty()) {
+				// pushing it back to CaughtString
+			}
+			//clearing it
+			toBeCaught = "";
+			functions.push_back({ lastSymbol,CaughtZeroOrManySymbols });
+
+		}
+		else if (regex[i] == '+') {
+
+			char lastSymbol = toBeCaught.back();
+			toBeCaught.pop_back();
+			if (!toBeCaught.empty()) {
+				// pushing it back to CaughtString
+			}
+			//clearing it
+			toBeCaught = "";
+			functions.push_back({ lastSymbol,CaughtOneOrManySymbols });
+
+		}
+		else if (regex[i] == '?') {
+
+			char lastSymbol = toBeCaught.back();
+			toBeCaught.pop_back();
+			if (!toBeCaught.empty()) {
+				// pushing it back to CaughtString
+			}
+			//clearing it
+			toBeCaught = "";
+			functions.push_back({ lastSymbol, CaughtZeroOrOneSymbols});
+
+		}
+		// if is an ordinary symbol
+		else
+		{
+			toBeCaught.push_back(regex[i]);
+		}
+	}
+}
+//bool CaughtString(string toMatchWith, int& currentTextIndex, const string text) {
+//	//to implement
+//}
 
 // if the regex is only of ordinary symbols, we check if it is contained in the text from the file
 bool IsRegexExpressionContainedInString(string regex, string text)
@@ -204,7 +259,9 @@ int main() {
 
 	myFile.close();
 
+	ConvertRegexexpressionToFunctions(regexCommand);
 	cout << IsRegexExpressionContainedInString(regexCommand, textFromFile);
+	
 
 	return 0;
 }
