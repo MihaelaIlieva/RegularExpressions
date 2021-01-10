@@ -144,6 +144,17 @@ bool IsRegexValid(string regex) {
 }
 vector< pair<string, bool (*)(string searchedChar, int& currentIndexInText, string text)>> functions;
 
+string PushToCaughtStringAndGetLastSymbol(string& toBeCaught) {
+	string lastSymbol = string(1, toBeCaught.back());
+	toBeCaught.pop_back();
+	if (!toBeCaught.empty()) {
+		functions.push_back({ toBeCaught,CaughtString });
+	}
+	//clearing it
+	toBeCaught = "";
+	return lastSymbol;
+}
+
 void ConvertRegexexpressionToFunctions(string regex) {
 	string toBeCaught = "";
 	int specialsymbolscount = 0;
@@ -151,37 +162,19 @@ void ConvertRegexexpressionToFunctions(string regex) {
 	for (size_t i = 0; i < regex.size(); i++) {
 		if (regex[i] == '*') {
 
-			string lastSymbol = string(1,toBeCaught.back());
-			toBeCaught.pop_back();
-			if (!toBeCaught.empty()) {
-				functions.push_back({ toBeCaught,CaughtString });
-			}
-			//clearing it
-			toBeCaught = "";
+			string lastSymbol = PushToCaughtStringAndGetLastSymbol(toBeCaught);
 			functions.push_back({ lastSymbol,CaughtZeroOrManySymbols });
 
 		}
 		else if (regex[i] == '+') {
 
-			string lastSymbol = string(1, toBeCaught.back());
-			toBeCaught.pop_back();
-			if (!toBeCaught.empty()) {
-				functions.push_back({ toBeCaught,CaughtString });
-			}
-			//clearing it
-			toBeCaught = "";
+			string lastSymbol = PushToCaughtStringAndGetLastSymbol(toBeCaught);
 			functions.push_back({ lastSymbol,CaughtOneOrManySymbols });
 
 		}
 		else if (regex[i] == '?') {
 
-			string lastSymbol = string(1, toBeCaught.back());
-			toBeCaught.pop_back();
-			if (!toBeCaught.empty()) {
-				functions.push_back({ toBeCaught,CaughtString });
-			}
-			//clearing it
-			toBeCaught = "";
+			string lastSymbol = PushToCaughtStringAndGetLastSymbol(toBeCaught);
 			functions.push_back({ lastSymbol, CaughtZeroOrOneSymbols});
 
 		}
