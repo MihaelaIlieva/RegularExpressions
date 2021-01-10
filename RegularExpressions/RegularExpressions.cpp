@@ -66,7 +66,8 @@ bool CaughtString(string toMatchWith, int& currentTextIndex, string text) {
 		&& currentTextIndex <= text.size()) {
 		indexOfStringToMatchWith++;
 		currentTextIndex++;
-		if (indexOfStringToMatchWith >= toMatchWith.size() - 1) {
+		if (indexOfStringToMatchWith > toMatchWith.size() - 1) {
+			
 			return true;
 		}
 	}
@@ -169,6 +170,11 @@ void ConvertRegexexpressionToFunctions(string regex) {
 			toBeCaught = "";
 			functions.push_back({ lastSymbol, CaughtZeroOrOneSymbols});
 
+		}
+		else if (regex[i] == '\\') {
+			char escapedSymbol = regex[i + 1];
+			toBeCaught.push_back(escapedSymbol);
+			i++;
 		}
 		// if is an ordinary symbol
 		else {

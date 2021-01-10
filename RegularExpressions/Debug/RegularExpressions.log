@@ -1,6 +1,6 @@
 ﻿  RegularExpressions.cpp
 C:\Users\User\source\repos\RegularExpressions\RegularExpressions\RegularExpressions.cpp(65,101): warning C4018: '<=': signed/unsigned mismatch
 C:\Users\User\source\repos\RegularExpressions\RegularExpressions\RegularExpressions.cpp(66,23): warning C4018: '<=': signed/unsigned mismatch
-C:\Users\User\source\repos\RegularExpressions\RegularExpressions\RegularExpressions.cpp(69,32): warning C4018: '>=': signed/unsigned mismatch
-C:\Users\User\source\repos\RegularExpressions\RegularExpressions\RegularExpressions.cpp(189,20): warning C4018: '<=': signed/unsigned mismatch
+C:\Users\User\source\repos\RegularExpressions\RegularExpressions\RegularExpressions.cpp(69,32): warning C4018: '>': signed/unsigned mismatch
+C:\Users\User\source\repos\RegularExpressions\RegularExpressions\RegularExpressions.cpp(194,20): warning C4018: '<=': signed/unsigned mismatch
   RegularExpressions.vcxproj -> C:\Users\User\source\repos\RegularExpressions\Debug\RegularExpressions.exe
