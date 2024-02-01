@@ -1,5 +1,5 @@
 # RegularExpressions
-A university task
+A university task 2020/2021
 This project is a simplified version of Regex template checker. The user can choose from the following special symbols to include in their expression:
 1. ‘^’ - expected only in the beginning of the expression; shows all matches that are on a new line
 2. ‘.’ - one random symbol, there are no restrictions for it
